@@ -14,7 +14,7 @@ router.post('/', validateUser, (req, res) => {
   })
 });
 
-router.post('/:id/posts', validateUserId, (req, res) => {
+router.post('/:id/posts', validateUserId, validatePost, (req, res) => {
   let { id } = req.params;
   let changes = req.body;
   Users.insert(id, changes).then(user => {
@@ -38,7 +38,13 @@ router.get('/:id', validateUserId, (req, res) => {
 });
 
 router.get('/:id/posts', validateUserId, (req, res) => {
-  res.status(200).json(req.user);
+  let { id } = req.params;
+  Users.getUserPosts(id).then(posts => {
+    res.status(200).json(posts)
+  })
+  .catch(err => {
+    res.status(500)
+  })
 });
 
 router.delete('/:id', validateUserId, (req, res) => {
