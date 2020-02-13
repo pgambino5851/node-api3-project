@@ -2,46 +2,98 @@ const express = require('express');
 
 const router = express.Router();
 
-router.post('/', (req, res) => {
-  // do your magic!
+const Users = require('./userDb')
+
+
+router.post('/', validateUser, (req, res) => {
+  Users.insert(req.body).then(user => {
+    res.status(200).json(user);
+  })
+  .catch(err => {
+    res.status(500).json({message: "Error creating user."})
+  })
 });
 
-router.post('/:id/posts', (req, res) => {
-  // do your magic!
-});
+router.post('/:id/posts', validateUserId, (req, res) => {
+  let { id } = req.params;
+  let changes = req.body;
+  Users.insert(id, changes).then(user => {
+    res.status(200).json(changes);
+  })
+  .catch(err => {
+    res.status(500).json({message: "Post could not be created."})
+  })
+  })
 
 router.get('/', (req, res) => {
-  // do your magic!
+  Users.get().then(users => {
+    res.status(200).json(users);
+  }).catch(error => {
+    res.status(500).json({message: "Error retrieving posts."});
+  })
 });
 
-router.get('/:id', (req, res) => {
-  // do your magic!
+router.get('/:id', validateUserId, (req, res) => {
+  res.status(200).json(req.user);
 });
 
-router.get('/:id/posts', (req, res) => {
-  // do your magic!
+router.get('/:id/posts', validateUserId, (req, res) => {
+  res.status(200).json(req.user);
 });
 
-router.delete('/:id', (req, res) => {
-  // do your magic!
+router.delete('/:id', validateUserId, (req, res) => {
+  let { id } = req.params;
+  Users.remove(id).then(user => {
+    res.status(200).json({message: "User has been nuked."})
+  })
 });
 
-router.put('/:id', (req, res) => {
-  // do your magic!
+router.put('/:id', validateUserId, (req, res) => {
+  let { id } = req.params;
+  let text = req.body;
+  Users.update(id, text).then(user => {
+    res.status(200).json(text)
+  })
+  .catch(error => {
+    console.log(error);
+    res.status(500).json({message: "Error updating the user"})
+  })
 });
 
 //custom middleware
 
 function validateUserId(req, res, next) {
-  // do your magic!
+  Users.getById(req.params.id).then(user => {
+    if(user){
+      req.user = user;
+      next();
+    } else {
+      res.status(400).json({message: "Invalid user id"});
+      next();
+    }
+  })
 }
 
 function validateUser(req, res, next) {
-  // do your magic!
+  let body = req.body;
+  if(req.body.name){
+    req.user = req.body.name
+    next();
+  }
+  else {
+    console.log("POST BODY:", req.body)
+    res.status(400).json({message: "Missing required text field"})
+  }
 }
 
 function validatePost(req, res, next) {
-  // do your magic!
+  if(req.body){
+    next();
+  }
+  else {
+    console.log("POST BODY:", req.body)
+    res.status(400).json({message: "Missing required text field"})
+  }
 }
 
 module.exports = router;
