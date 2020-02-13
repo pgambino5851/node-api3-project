@@ -5,7 +5,7 @@ const port = process.env.PORT || 5000;
 
 server.get("/", (req, res) => {
   
-  res.status(200).json({message: "Hello Heroku!");
+  res.status(200).json({message: "Hello Heroku!"});
 })
 
 server.listen(port, () => {
